@@ -1,0 +1,46 @@
+<div class="login-container">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+    <h2>{{ currentTexts.login_in }}</h2> <!-- Título traducible -->
+    
+    <div class="form-group">
+      <label for="username">{{ currentTexts.insert_user }}</label> <!-- Etiqueta Usuario traducible -->
+      <input 
+        type="text" 
+        id="username" 
+        formControlName="username" 
+        placeholder="{{ currentTexts.insert_user }}"
+        [class.error]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+    </div>
+
+    <div class="form-group">
+      <label for="password">{{ currentTexts.email }}</label> <!-- Etiqueta Contraseña traducible -->
+      <input 
+        type="password" 
+        id="password" 
+        formControlName="password" 
+        placeholder="{{ currentTexts.insert_email }}"
+        [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+    </div>
+
+    <div class="error-message" *ngIf="error">
+      {{ error }}
+    </div>
+
+    <button type="submit" [disabled]="loginForm.invalid || isLoading">
+      {{ isLoading ?  currentTexts.login : currentTexts.login_in }}
+    </button>
+
+    <div class="form-footer">
+      <p>{{ currentTexts.no_account }}<a class="matrix-link" (click)="goToRegister()">{{ currentTexts.register }}</a></p>
+    </div>
+    
+    <div class="separator">
+      <span>o</span>
+    </div>
+
+    <div class="login-42-container">
+      <button class="login-42-button" (click)="login42()">{{ currentTexts.login_42 }}</button>
+    </div>
+
+  </form>
+</div>

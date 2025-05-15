@@ -1,0 +1,90 @@
+<div class="register-container">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+    <h2>{{ currentTexts.registry }}</h2>
+    
+    <div class="form-group">
+      <label for="username">{{ currentTexts.insert_user }}</label>
+      <input 
+        type="text" 
+        id="username" 
+        formControlName="username" 
+        placeholder="Ingresa tu usuario"
+        [class.error]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+      <div class="validation-error" *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+        <span *ngIf="registerForm.get('username')?.errors?.['required']">{{ currentTexts.user_required }}</span>
+        <span *ngIf="registerForm.get('username')?.errors?.['minlength']">{{ currentTexts.user_characters }}</span>
+        <span *ngIf="registerForm.get('username')?.errors?.['forbidden42']">{{ currentTexts.user_contains_forbidden }}</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="email">{{ currentTexts.insert_email }}</label>
+      <input 
+        type="email" 
+        id="email" 
+        formControlName="email" 
+        placeholder="Ingresa tu correo electrónico"
+        [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+      <div class="validation-error" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+        <span *ngIf="registerForm.get('email')?.errors?.['required']">{{ currentTexts.email_required }}</span>
+        <span *ngIf="registerForm.get('email')?.errors?.['email']">{{ currentTexts.insert_password }}</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">{{ currentTexts.insert_password }}</label>
+      <input 
+        type="password" 
+        id="password" 
+        formControlName="password" 
+        placeholder="Ingresa tu contraseña"
+        [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+      <div class="validation-error" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+        <span *ngIf="registerForm.get('password')?.errors?.['required']">{{ currentTexts.password_required }}</span>
+        <span *ngIf="registerForm.get('password')?.errors?.['minlength']">{{ currentTexts.password_characters }}</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password2">{{ currentTexts.confirm_password }}</label>
+      <input 
+        type="password" 
+        id="password2" 
+        formControlName="password2" 
+        placeholder="Confirma tu contraseña"
+        [class.error]="registerForm.get('password2')?.invalid && registerForm.get('password2')?.touched">
+      <div class="validation-error" *ngIf="registerForm.get('password2')?.invalid && registerForm.get('password2')?.touched">
+        <span *ngIf="registerForm.get('password2')?.errors?.['required']">{{ currentTexts.password_confirmation_required }}</span>
+      </div>
+      <div class="validation-error" *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('password2')?.touched">
+        {{ currentTexts.password_mismatch }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="default_language">{{ currentTexts.select_language }}</label>
+      <div class="custom-select-wrapper">
+        <select 
+          id="default_language" 
+          formControlName="default_language" 
+          class="form-control">
+          <option value="es">{{ currentTexts.spanish }}</option>
+          <option value="eus">{{ currentTexts.basque }}</option>
+          <option value="en">{{ currentTexts.english }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="error-message" *ngIf="error">
+      {{ error }}
+    </div>
+
+    <button type="submit" [disabled]="registerForm.invalid || isLoading">
+      {{ isLoading ? currentTexts.registering : currentTexts.register }}
+    </button>
+
+    <div class="form-footer">
+      <p>{{ currentTexts.already_registered }} <a (click)="goToLogin()">{{ currentTexts.login }}</a></p>
+    </div>
+  </form>
+</div>

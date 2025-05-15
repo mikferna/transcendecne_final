@@ -1,0 +1,138 @@
+<!-- Enhanced Matrix-style Profile Component -->
+<div class="matrix-container">
+  <!-- Digital Rain Background Animation -->
+  <div class="digital-rain"></div>
+  
+  <!-- Main Content -->
+  <div class="profile-container" *ngIf="!loading && profile">   
+    <div class="profile-header">     
+      <div class="avatar-container">       
+        <img [src]="getAbsoluteAvatarUrl(profile.avatar)" alt="Avatar" class="profile-avatar">
+        <div class="avatar-glow"></div>       
+        <span class="online-status" [class.online]="profile.is_online" [class.offline]="!profile.is_online">         
+          {{ profile.is_online ? 'ONLINE' : 'OFFLINE' }}       
+        </span>     
+      </div>     
+      <div class="profile-info">       
+        <h1 class="glitch-text">{{ profile.username }}</h1>
+        <div class="stats">         
+          <div class="stat">           
+            <span class="stat-value terminal-text">{{ profile.games_played }}</span>           
+            <span class="stat-label">{{ currentTexts.matches }}</span>         
+          </div>         
+          <div class="stat">           
+            <span class="stat-value terminal-text">{{ profile.games_won }}</span>           
+            <span class="stat-label">{{ currentTexts.wins }}</span>         
+          </div>         
+          <div class="stat">           
+            <span class="stat-value terminal-text">{{ getWinRate() }}%</span>           
+            <span class="stat-label">{{ currentTexts.efficiency }}</span>         
+          </div>       
+        </div>     
+      </div>   
+    </div>      
+    
+    <div class="profile-sections">     
+      <div class="section hackercard">
+        <div class="section-header">
+          <h2>[<span class="text-bracket-open">_</span> {{ currentTexts.efficiency }} <span class="blink">_</span> <span class="text-bracket-close">]</span></h2>
+          <div class="corner-decoration top-left"></div>
+          <div class="corner-decoration top-right"></div>
+          <div class="corner-decoration bottom-left"></div>
+          <div class="corner-decoration bottom-right"></div>
+        </div>       
+        <div class="friends-list scrollable hide-scrollbar">         
+          <div *ngFor="let friend of profile.friends" class="friend-item">
+            <div class="friend-info">
+              <span class="friend-name terminal-text">{{ friend.username }}</span>           
+              <span class="online-status" [class.online]="friend.is_online" [class.offline]="!friend.is_online">             
+                {{ friend.is_online ? currentTexts.connected : currentTexts.disconnected }}           
+              </span>
+            </div>
+          </div>
+          <div *ngIf="profile.friends.length === 0" class="no-data">
+            <span>{{ currentTexts.no_contacts_found_ddbb }}</span>
+          </div>       
+        </div>     
+      </div>          
+      
+      <div class="section hackercard">
+        <div class="section-header">
+          <h2>[<span class="text-bracket-open">_</span> {{ currentTexts.no_contacts_found_ddbb }} <span class="blink">_</span> <span class="text-bracket-close">]</span></h2>
+          <div class="corner-decoration top-left"></div>
+          <div class="corner-decoration top-right"></div>
+          <div class="corner-decoration bottom-left"></div>
+          <div class="corner-decoration bottom-right"></div>
+        </div>       
+        <div class="match-history scrollable hide-scrollbar">         
+          <div *ngFor="let match of profile.match_history" class="match-item" [class.win]="match.winner_username === profile.username">           
+            <div class="match-players">
+              <!-- Partida 1v1 -->
+              <ng-container *ngIf="match.match_type === 'local' || match.match_type === 'tournament' || match.match_type === 'ai'">
+                <span class="player terminal-text">{{ match.player1_username || match.player1 }}</span>
+                <span class="vs">VS</span>
+                <span class="player terminal-text">{{ match.is_against_ai ? 'IA-SYSTEM' : (match.player2_username || match.player2) }}</span>
+              </ng-container>
+              
+              <!-- Partida 1v1v1 -->
+              <ng-container *ngIf="match.match_type === '3players'">
+                <span class="player terminal-text">{{ match.player1_username || match.player1 }}</span>
+                <span class="vs">VS</span>
+                <span class="player terminal-text">{{ match.player2_username || match.player2 }}</span>
+                <span class="vs">VS</span>
+                <span class="player terminal-text">{{ match.player3_username || match.player3 }}</span>
+              </ng-container>
+              
+              <!-- Partida 1v1v1v1 -->
+              <ng-container *ngIf="match.match_type === '4players'">
+                <span class="player terminal-text">{{ match.player1_username || match.player1 }}</span>
+                <span class="vs">VS</span>
+                <span class="player terminal-text">{{ match.player2_username || match.player2 }}</span>
+                <span class="vs">VS</span>
+                <span class="player terminal-text">{{ match.player3_username || match.player3 }}</span>
+                <span class="vs">VS</span>
+                <span class="player terminal-text">{{ match.player4_username || match.player4 }}</span>
+              </ng-container>
+            </div>
+            <div class="match-score">
+              <!-- Partida 1v1 -->
+              <ng-container *ngIf="match.match_type === 'local' || match.match_type === 'tournament' || match.match_type === 'ai'">
+                {{ match.player1_score }} - {{ match.player2_score }}
+              </ng-container>
+              
+              <!-- Partida 1v1v1 -->
+              <ng-container *ngIf="match.match_type === '3players'">
+                {{ match.player1_score }} - {{ match.player2_score }} - {{ match.player3_score }}
+              </ng-container>
+              
+              <!-- Partida 1v1v1v1 -->
+              <ng-container *ngIf="match.match_type === '4players'">
+                {{ match.player1_score }} - {{ match.player2_score }} - {{ match.player3_score }} - {{ match.player4_score }}
+              </ng-container>
+            </div>
+            <div class="match-winner" [class.win]="match.winner_username === profile.username">
+              {{ match.winner_username === profile.username ? currentTexts.win : currentTexts.lose }}
+            </div>
+            <div class="match-date">{{ match.match_date | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          <div *ngIf="profile.match_history.length === 0" class="no-data">
+            <span>{{ currentTexts.no_combat_registry_found_ddbb }}</span>
+          </div>       
+        </div>     
+      </div>   
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <div class="matrix-loader">
+      <div class="matrix-code">01101101011000010111010001110010011010010111100000100000001101110010111001100100</div>
+      <div class="loading-text">{{ currentTexts.accessing_system }}</div>
+    </div>
+  </div>  
+
+  <div *ngIf="error" class="error">
+    <div class="error-icon">!</div>
+    <div class="error-message">{{ currentTexts.system_error }} {{ error }}</div>
+    <div class="error-code">CODE: 404</div>
+  </div>
+</div>

@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Pong - Mejorado</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            border: 2px solid #0f0;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        #matrix-canvas {
+            opacity: 0.2;
+        }
+        
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        #power-up-display {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+        }
+        
+        #game-over h2 {
+            font-size: 36px;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 30px;
+        }
+        
+        #restart-btn, #main-menu-btn {
+            background-color: transparent;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 0 5px #0f0;
+            pointer-events: auto;
+            margin: 10px;
+        }
+        
+        #restart-btn:hover, #main-menu-btn:hover {
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 14px;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            pointer-events: none;
+        }
+        
+        /* Pause screen styles */
+        #pause-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 25;
+        }
+        
+        #pause-screen h2 {
+            font-size: 36px;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 30px;
+        }
+        
+        #pause-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: transparent;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 0 5px #0f0;
+            pointer-events: auto;
+            z-index: 20;
+        }
+        
+        /* Main menu styles */
+        #main-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 40;
+        }
+        
+        #main-menu h1 {
+            font-size: 42px;
+            color: #0f0;
+            text-shadow: 0 0 15px #0f0;
+            margin-bottom: 30px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        
+        #menu-options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        
+        .menu-button {
+            background-color: transparent;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 0 5px #0f0;
+            margin: 10px;
+            width: 250px;
+            text-align: center;
+        }
+        
+        .menu-button:hover {
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+        
+        /* Settings styles */
+        #settings-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 45;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        
+        #settings-menu h2 {
+            font-size: 32px;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 20px;
+        }
+        
+        .settings-section {
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .settings-section h3 {
+            color: #0f0;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .setting-label {
+            flex: 0 0 40%;
+        }
+        
+        .setting-control {
+            flex: 0 0 55%;
+            text-align: right;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            background: #054f05;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+        
+        .slider:hover {
+            opacity: 1;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #0f0;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: #0f0;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        .slider-value {
+            margin-left: 10px;
+            min-width: 30px;
+            text-align: right;
+        }
+        
+        select, button {
+            background-color: transparent;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            box-shadow: 0 0 5px #0f0;
+        }
+        
+        select:hover, button:hover {
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+        
+        .buttons-row {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .buttons-row button {
+            margin: 0 10px;
+            padding: 8px 15px;
+        }
+        
+        /* Game mode selection styles */
+        #mode-selection {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        
+        #mode-selection h2 {
+            font-size: 32px;
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            margin-bottom: 30px;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .mode-button {
+            width: 200px;
+            height: 150px;
+            background-color: transparent;
+            color: #0f0;
+            border: 1px solid #0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 0 10px #0f0;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-button:hover {
+            background-color: rgba(0, 255, 0, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .mode-button i {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        
+        /* Active power-up indicator */
+        #active-power-up {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            padding: 5px 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #0f0;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="matrix-canvas"></canvas>
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- Main game UI -->
+        <div id="ui-layer">
+            <div id="score-display">0 : 0</div>
+            <div id="power-up-display"></div>
+            <button id="pause-btn">PAUSA</button>
+            <div id="controls">PLAYER: W/S KEYS</div>
+            <div id="active-power-up"></div>
+            
+            <!-- Game over screen -->
+            <div id="game-over">
+                <h2 id="winner-text">GAME OVER</h2>
+                <div>
+                    <button id="restart-btn">RELOAD MATRIX</button>
+                    <button id="main-menu-btn">MAIN MENU</button>
+                </div>
+            </div>
+            
+            <!-- Pause screen -->
+            <div id="pause-screen">
+                <h2>PAUSED</h2>
+                <div>
+                    <button id="resume-btn">RESUME</button>
+                    <button id="exit-to-menu-btn">EXIT TO MENU</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main menu -->
+        <div id="main-menu">
+            <h1>MATRIX PONG</h1>
+            <div id="menu-options">
+                <button class="menu-button" id="play-btn">JUGAR</button>
+                <button class="menu-button" id="settings-btn">CONFIGURACIÓN</button>
+            </div>
+        </div>
+        
+        <!-- Mode selection screen -->
+        <div id="mode-selection">
+            <h2>SELECCIONA MODO</h2>
+            <div class="mode-buttons">
+                <button class="mode-button" id="ai-mode-btn">
+                    VS IA
+                </button>
+                <button class="mode-button" id="2p-mode-btn">
+                    2 JUGADORES
+                </button>
+            </div>
+            <button class="menu-button" id="back-to-menu-btn" style="margin-top: 30px;">ATRÁS</button>
+        </div>
+        
+        <!-- Settings menu -->
+        <div id="settings-menu">
+            <h2>CONFIGURACIÓN</h2>
+            
+            <div class="settings-section">
+                <h3>JUEGO</h3>
+                <div class="setting-row">
+                    <div class="setting-label">PUNTOS PARA GANAR</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="3" max="21" value="10" class="slider" id="winning-score">
+                            <span class="slider-value" id="winning-score-value">10</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">DIFICULTAD IA</div>
+                    <div class="setting-control">
+                        <select id="ai-difficulty">
+                            <option value="very-easy">MUY FÁCIL</option>
+                            <option value="easy">FÁCIL</option>
+                            <option value="medium" selected>MEDIO</option>
+                            <option value="hard">DIFÍCIL</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>PELOTA</h3>
+                <div class="setting-row">
+                    <div class="setting-label">VELOCIDAD INICIAL</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="3" max="10" value="5" class="slider" id="ball-speed">
+                            <span class="slider-value" id="ball-speed-value">5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">TAMAÑO</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="4" max="15" value="8" class="slider" id="ball-size">
+                            <span class="slider-value" id="ball-size-value">8</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">INTENSIDAD DE CRUCETA</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="0" max="10" value="2" class="slider" id="crosshair-intensity">
+                            <span class="slider-value" id="crosshair-intensity-value">2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>RAQUETAS</h3>
+                <div class="setting-row">
+                    <div class="setting-label">ALTURA</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="40" max="120" value="80" class="slider" id="paddle-height">
+                            <span class="slider-value" id="paddle-height-value">80</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">ANCHURA</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="8" max="20" value="12" class="slider" id="paddle-width">
+                            <span class="slider-value" id="paddle-width-value">12</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">VELOCIDAD JUGADOR</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="5" max="15" value="8" class="slider" id="player-speed">
+                            <span class="slider-value" id="player-speed-value">8</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>EFECTOS VISUALES</h3>
+                <div class="setting-row">
+                    <div class="setting-label">DENSIDAD MATRIX</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="1" max="10" value="5" class="slider" id="matrix-density">
+                            <span class="slider-value" id="matrix-density-value">5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">OPACIDAD MATRIX</div>
+                    <div class="setting-control">
+                        <div class="slider-container">
+                            <input type="range" min="1" max="10" value="5" class="slider" id="matrix-opacity">
+                            <span class="slider-value" id="matrix-opacity-value">5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">TEMA</div>
+                    <div class="setting-control">
+                        <select id="color-theme">
+                            <option value="matrix" selected>MATRIX</option>
+                            <option value="blue">BLUE PILL</option>
+                            <option value="red">RED PILL</option>
+                            <option value="gold">ORACLE</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">EFECTOS DE PANTALLA</div>
+                    <div class="setting-control">
+                        <select id="screen-effects">
+                            <option value="none">NINGUNO</option>
+                            <option value="light" selected>SUAVE</option>
+                            <option value="heavy">INTENSO</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="buttons-row">
+                <button id="save-settings-btn">GUARDAR</button>
+                <button id="cancel-settings-btn">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const gameCanvas = document.getElementById('game-canvas');
+        const ctx = gameCanvas.getContext('2d');
+        const matrixCanvas = document.getElementById('matrix-canvas');
+        const matrixCtx = matrixCanvas.getContext('2d');
+        const container = document.getElementById('game-container');
+        
+        // Set canvas dimensions
+        gameCanvas.width = container.clientWidth;
+        gameCanvas.height = container.clientHeight;
+        matrixCanvas.width = container.clientWidth;
+        matrixCanvas.height = container.clientHeight;
+        
+        // UI elements
+        const scoreDisplay = document.getElementById('score-display');
+        const powerUpDisplay = document.getElementById('power-up-display');
+        const gameOverScreen = document.getElementById('game-over');
+        const winnerText = document.getElementById('winner-text');
+        const restartBtn = document.getElementById('restart-btn');
+        const mainMenuBtn = document.getElementById('main-menu-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const pauseScreen = document.getElementById('pause-screen');
+        const resumeBtn = document.getElementById('resume-btn');
+        const exitToMenuBtn = document.getElementById('exit-to-menu-btn');
+        const controlsInfo = document.getElementById('controls');
+        const activePowerUpEl = document.getElementById('active-power-up');
+        const mainMenu = document.getElementById('main-menu');
+        const playBtn = document.getElementById('play-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsMenu = document.getElementById('settings-menu');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const cancelSettingsBtn = document.getElementById('cancel-settings-btn');
+        const modeSelection = document.getElementById('mode-selection');
+        const aiModeBtn = document.getElementById('ai-mode-btn');
+        const twoPlayerModeBtn = document.getElementById('2p-mode-btn');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        
+        // Game settings
+        let gameSettings = {
+            winningScore: 10,
+            aiDifficulty: 'medium',
+            ballSpeed: 5,
+            ballSize: 8,
+            crosshairIntensity: 2,
+            paddleHeight: 80,
+            paddleWidth: 12,
+            playerSpeed: 8,
+            matrixDensity: 5,
+            matrixOpacity: 5,
+            colorTheme: 'matrix',
+            screenEffects: 'light'
+        };
+        
+        // Game constants and variables
+        let BALL_SIZE;
+        let PADDLE_WIDTH;
+        let PADDLE_HEIGHT;
+        let WINNING_SCORE;
+        let PLAYER_SPEED;
+        let AI_SPEED;
+        let CROSSHAIR_OPACITY;
+        
+        // Theme colors
+        const themes = {
+            matrix: { primary: '#0f0', secondary: '#00ff00', background: '#000', shadow: '#0f0' },
+            blue: { primary: '#0088ff', secondary: '#00eeff', background: '#001033', shadow: '#0088ff' },
+            red: { primary: '#ff3333', secondary: '#ff6666', background: '#330000', shadow: '#ff0000' },
+            gold: { primary: '#ffcc00', secondary: '#ffaa00', background: '#332200', shadow: '#ffcc00' }
+        };
+        
+        let currentTheme = themes.matrix;
+        
+        // Game state variables
+        let playerY = 0;
+        let aiY = 0;
+        let ball = null;
+        let powerUpBall = null;
+        let playerScore = 0;
+        let aiScore = 0;
+        let isPlaying = false;
+        let isPaused = false;
+        let aiMode = true;
+        let gameStarted = false;
+        
+        // AI variables for ball tracking
+        let ballInvisibleToAI = false;
+        let aiLastKnownBallPosition = null;
+        let aiCanSeeImpact = false;
+        
+        // Paddle height variables
+        let playerPaddleHeight;
+        let aiPaddleHeight;
+        
+        // Power-up variables
+        let activePowerUp = null;
+        
+        // Matrix effect variables
+        const matrixChars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        let drops = [];
+        let columns;
+        
+        // Input tracking
+        const keys = {
+            w: false,
+            s: false,
+            up: false,
+            down: false,
+            escape: false
+        };
+        
+        // AI parameters
+        let aiRandomness = 0.2;  // Higher value = more random (worse AI)
+        let aiReactionDelay = 5; // Frames of delay in AI reaction
+        let aiFrameCounter = 0;  // Counter for AI movement
+        let aiTargetY = 0;       // Target position for AI paddle
+        
+        // Power-ups array - simplified for better gameplay
+        const powerUpTypes = [
+            { 
+                name: 'BULLET TIME', 
+                effect: function(player) {
+                    // Slow down opponent and ball
+                    if (player === 'player') {
+                        AI_SPEED = AI_SPEED * 0.6;
+                    } else {
+                        PLAYER_SPEED = PLAYER_SPEED * 0.6;
+                    }
+                    // Slow down ball
+                    ball.speedX = ball.speedX * 0.7;
+                    ball.speedY = ball.speedY * 0.7;
+                },
+                color: '#87CEEB'
+            },
+            { 
+                name: 'PADDLE GROWTH', 
+                effect: function(player) {
+                    // Increase paddle size
+                    if (player === 'player') {
+                        playerPaddleHeight = PADDLE_HEIGHT * 1.8;
+                    } else {
+                        aiPaddleHeight = PADDLE_HEIGHT * 1.8;
+                    }
+                },
+                color: '#FFD700'
+            },
+            { 
+                name: 'AGENT SMITH', 
+                effect: function(player) {
+                    // Increase ball speed
+                    ball.speedX = ball.speedX * 1.6;
+                    ball.speedY = ball.speedY * 1.6;
+                    ball.color = '#FF4500';
+                },
+                color: '#FF4500'
+            },
+            { 
+                name: 'GLITCH', 
+                effect: function(player) {
+                    // Add glitchiness to ball movement
+                    ball.update = function() {
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        
+                        // Randomly change Y direction slightly
+                        if (Math.random() < 0.1) {
+                            this.speedY += (Math.random() * 2 - 1);
+                        }
+                        
+                        // Handle collisions
+                        // (collision code here)
+                        
+                        return false; // No scoring
+                    };
+                },
+                color: '#9932CC'
+            },
+            { 
+                name: 'INVISIBLE BALL', 
+                effect: function(player) {
+                    // Make ball semi-transparent for base visual
+                    ball.opacity = 0.15;
+                    
+                    // Setup the blinking effect
+                    ball.invisibilityMode = true;
+                    ball.invisibleFor = player === 'player' ? 'ai' : 'player';
+                    ball.lastBlinkTime = Date.now();
+                    ball.blinkInterval = 500; // ms between blinks
+                    ball.blinkDuration = 100; // ms that ball is visible during blink
+                    ball.isCurrentlyVisible = false;
+                },
+                color: '#32CD32'
+            }
+        ];
+        
+        // Initialize UI and set slider event listeners
+        function initUI() {
+            // Setup sliders
+            document.getElementById('winning-score').value = gameSettings.winningScore;
+            document.getElementById('winning-score-value').textContent = gameSettings.winningScore;
+            
+            document.getElementById('ball-speed').value = gameSettings.ballSpeed;
+            document.getElementById('ball-speed-value').textContent = gameSettings.ballSpeed;
+            
+            document.getElementById('ball-size').value = gameSettings.ballSize;
+            document.getElementById('ball-size-value').textContent = gameSettings.ballSize;
+            
+            document.getElementById('crosshair-intensity').value = gameSettings.crosshairIntensity;
+            document.getElementById('crosshair-intensity-value').textContent = gameSettings.crosshairIntensity;
+            
+            document.getElementById('paddle-height').value = gameSettings.paddleHeight;
+            document.getElementById('paddle-height-value').textContent = gameSettings.paddleHeight;
+            
+            document.getElementById('paddle-width').value = gameSettings.paddleWidth;
+            document.getElementById('paddle-width-value').textContent = gameSettings.paddleWidth;
+            
+            document.getElementById('player-speed').value = gameSettings.playerSpeed;
+            document.getElementById('player-speed-value').textContent = gameSettings.playerSpeed;
+            
+            document.getElementById('matrix-density').value = gameSettings.matrixDensity;
+            document.getElementById('matrix-density-value').textContent = gameSettings.matrixDensity;
+            
+            document.getElementById('matrix-opacity').value = gameSettings.matrixOpacity;
+            document.getElementById('matrix-opacity-value').textContent = gameSettings.matrixOpacity;
+            
+            // Setup select elements
+            document.getElementById('ai-difficulty').value = gameSettings.aiDifficulty;
+            document.getElementById('color-theme').value = gameSettings.colorTheme;
+            document.getElementById('screen-effects').value = gameSettings.screenEffects;
+            
+            // Add event listeners to sliders
+            const allSliders = document.querySelectorAll('.slider');
+            allSliders.forEach(slider => {
+                slider.addEventListener('input', function() {
+                    const valueEl = document.getElementById(`${this.id}-value`);
+                    if (valueEl) {
+                        valueEl.textContent = this.value;
+                    }
+                });
+            });
+        }
+        
+        // Apply game settings
+        function applySettings() {
+            // Read values from UI
+            gameSettings.winningScore = parseInt(document.getElementById('winning-score').value);
+            gameSettings.aiDifficulty = document.getElementById('ai-difficulty').value;
+            gameSettings.ballSpeed = parseInt(document.getElementById('ball-speed').value);
+            gameSettings.ballSize = parseInt(document.getElementById('ball-size').value);
+            gameSettings.crosshairIntensity = parseInt(document.getElementById('crosshair-intensity').value);
+            gameSettings.paddleHeight = parseInt(document.getElementById('paddle-height').value);
+            gameSettings.paddleWidth = parseInt(document.getElementById('paddle-width').value);
+            gameSettings.playerSpeed = parseInt(document.getElementById('player-speed').value);
+            gameSettings.matrixDensity = parseInt(document.getElementById('matrix-density').value);
+            gameSettings.matrixOpacity = parseInt(document.getElementById('matrix-opacity').value);
+            gameSettings.colorTheme = document.getElementById('color-theme').value;
+            gameSettings.screenEffects = document.getElementById('screen-effects').value;
+            
+            // Apply to game variables
+            BALL_SIZE = gameSettings.ballSize;
+            PADDLE_WIDTH = gameSettings.paddleWidth;
+            PADDLE_HEIGHT = gameSettings.paddleHeight;
+            WINNING_SCORE = gameSettings.winningScore;
+            PLAYER_SPEED = gameSettings.playerSpeed;
+            CROSSHAIR_OPACITY = gameSettings.crosshairIntensity / 10;
+            
+            // Set matrix canvas opacity
+            matrixCanvas.style.opacity = gameSettings.matrixOpacity / 10;
+            
+            // Set AI difficulty parameters
+            switch(gameSettings.aiDifficulty) {
+                case 'very-easy':
+                    AI_SPEED = PLAYER_SPEED * 0.4;
+                    aiRandomness = 0.6;
+                    aiReactionDelay = 15;
+                    break;
+                case 'easy':
+                    AI_SPEED = PLAYER_SPEED * 0.6;
+                    aiRandomness = 0.3;
+                    aiReactionDelay = 10;
+                    break;
+                case 'medium':
+                    AI_SPEED = PLAYER_SPEED * 0.8;
+                    aiRandomness = 0.15;
+                    aiReactionDelay = 5;
+                    break;
+                case 'hard':
+                    AI_SPEED = PLAYER_SPEED;
+                    aiRandomness = 0.05;
+                    aiReactionDelay = 2;
+                    break;
+            }
+            
+            // Apply theme
+            currentTheme = themes[gameSettings.colorTheme];
+            
+            // Reset paddles to new size
+            playerPaddleHeight = PADDLE_HEIGHT;
+            aiPaddleHeight = PADDLE_HEIGHT;
+            
+            // Update matrix
+            columns = Math.floor(matrixCanvas.width / (25 - gameSettings.matrixDensity));
+            initMatrix();
+        }
+        
+        // Ball object constructor
+        function Ball(x, y, speedX, speedY, size, color) {
+            this.x = x || gameCanvas.width / 2;
+            this.y = y || gameCanvas.height / 2;
+            this.speedX = speedX || (Math.random() > 0.5 ? 1 : -1) * gameSettings.ballSpeed;
+            this.speedY = speedY || (Math.random() * 4 - 2);
+            this.size = size || BALL_SIZE;
+            this.color = color || currentTheme.primary;
+            this.opacity = 1.0;
+            
+            // Invisibility power-up properties
+            this.invisibilityMode = false;
+            this.invisibleFor = 'none'; // 'player' or 'ai'
+            this.lastBlinkTime = 0;
+            this.blinkInterval = 500;
+            this.blinkDuration = 100;
+            this.isCurrentlyVisible = false;
+            
+            // Track which player last hit the ball
+            this.lastHitBy = 'none';
+            
+            // Update ball position and handle collisions
+            this.update = function() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Ball collision with top and bottom walls
+                if (this.y < this.size || this.y > gameCanvas.height - this.size) {
+                    this.speedY = -this.speedY;
+                    // Ensure ball doesn't get stuck in walls
+                    this.y = this.y < this.size ? this.size : gameCanvas.height - this.size;
+                    
+                    // Add screen shake if enabled
+                    if (gameSettings.screenEffects !== 'none') {
+                        addScreenShake(3, 100);
+                    }
+                }
+                
+                // Ball collision with player paddle
+                if (this.x - this.size < PADDLE_WIDTH && 
+                    this.y > playerY && 
+                    this.y < playerY + playerPaddleHeight &&
+                    this.speedX < 0) {  // Only collide when ball is moving left
+                    
+                    // Calculate angle based on where ball hits paddle
+                    const hitPosition = (this.y - playerY) / playerPaddleHeight;
+                    const angle = (hitPosition - 0.5) * Math.PI * 0.7; // -35 to +35 degrees
+                    
+                    // Set new ball direction and increase speed slightly
+                    const speed = Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY);
+                    this.speedX = Math.cos(angle) * speed * 1.05; // 5% faster on each hit
+                    this.speedY = Math.sin(angle) * speed * 1.05;
+                    
+                    // Ensure ball moves to the right
+                    if (this.speedX < 0) this.speedX = -this.speedX;
+                    
+                    // Move ball out of paddle
+                    this.x = PADDLE_WIDTH + this.size;
+                    
+                    // Record that player hit the ball
+                    this.lastHitBy = 'player';
+                    
+                    // If ball is invisible to AI, briefly make it visible during paddle hit
+                    if (ballInvisibleToAI) {
+                        aiCanSeeImpact = true;
+                        
+                        // Update AI's knowledge of ball position
+                        aiLastKnownBallPosition = {
+                            x: this.x,
+                            y: this.y,
+                            speedX: this.speedX,
+                            speedY: this.speedY,
+                            lastUpdated: Date.now()
+                        };
+                        
+                        // Hide ball again after a short delay
+                        setTimeout(() => {
+                            aiCanSeeImpact = false;
+                        }, 150);
+                    }
+                    
+                    // Screen shake effect
+                    if (gameSettings.screenEffects === 'heavy') {
+                        addScreenShake(5, 150);
+                    }
+                }
+                
+                // Ball collision with AI paddle
+                if (this.x + this.size > gameCanvas.width - PADDLE_WIDTH && 
+                    this.y > aiY && 
+                    this.y < aiY + aiPaddleHeight &&
+                    this.speedX > 0) {  // Only collide when ball is moving right
+                    
+                    // Calculate angle based on where ball hits paddle
+                    const hitPosition = (this.y - aiY) / aiPaddleHeight;
+                    const angle = (hitPosition - 0.5) * Math.PI * 0.7; // -35 to +35 degrees
+                    
+                    // Set new ball direction and increase speed slightly
+                    const speed = Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY);
+                    this.speedX = Math.cos(angle) * speed * 1.05; // 5% faster on each hit
+                    this.speedY = Math.sin(angle) * speed * 1.05;
+                    
+                    // Ensure ball moves to the left
+                    if (this.speedX > 0) this.speedX = -this.speedX;
+                    
+                    // Move ball out of paddle
+                    this.x = gameCanvas.width - PADDLE_WIDTH - this.size;
+                    
+                    // Record that AI hit the ball
+                    this.lastHitBy = 'ai';
+                    
+                    // If ball is invisible to AI, briefly make it visible during paddle hit
+                    if (ballInvisibleToAI) {
+                        aiCanSeeImpact = true;
+                        
+                        // Update AI's knowledge of ball position
+                        aiLastKnownBallPosition = {
+                            x: this.x,
+                            y: this.y,
+                            speedX: this.speedX,
+                            speedY: this.speedY,
+                            lastUpdated: Date.now()
+                        };
+                        
+                        // Hide ball again after a short delay
+                        setTimeout(() => {
+                            aiCanSeeImpact = false;
+                        }, 150);
+                    }
+                    
+                    // Screen shake effect
+                    if (gameSettings.screenEffects === 'heavy') {
+                        addScreenShake(5, 150);
+                    }
+                }
+                
+                // Check for scoring
+                if (this.x < 0) {
+                    aiScore++;
+                    updateScore();
+                    
+                    // Screen shake on scoring
+                    if (gameSettings.screenEffects !== 'none') {
+                        addScreenShake(7, 300);
+                    }
+                    
+                    return true; // Ball scored
+                } else if (this.x > gameCanvas.width) {
+                    playerScore++;
+                    updateScore();
+                    
+                    // Screen shake on scoring
+                    if (gameSettings.screenEffects !== 'none') {
+                        addScreenShake(7, 300);
+                    }
+                    
+                    return true; // Ball scored
+                }
+                
+                return false; // No scoring
+            };
+            
+            // Draw the ball
+            this.draw = function() {
+                // Check if ball should be visible based on blink timing and field position
+                let shouldBeVisible = true;
+                
+                // Handle invisibility power-up
+                if (this.invisibilityMode) {
+                    const now = Date.now();
+                    const timeSinceLastBlink = now - this.lastBlinkTime;
+                    
+                    // Determine if we're in the opponent's field
+                    let inOpponentField = false;
+                    if (this.invisibleFor === 'ai' && this.x > gameCanvas.width / 2) {
+                        inOpponentField = true;
+                    } else if (this.invisibleFor === 'player' && this.x < gameCanvas.width / 2) {
+                        inOpponentField = true;
+                    }
+                    
+                    // If in opponent's field, apply blinking effect
+                    if (inOpponentField) {
+                        // Check if it's time for a new blink
+                        if (timeSinceLastBlink >= this.blinkInterval) {
+                            this.lastBlinkTime = now;
+                            this.isCurrentlyVisible = true;
+                            
+                            // Hide ball again after blink duration
+                            setTimeout(() => {
+                                this.isCurrentlyVisible = false;
+                            }, this.blinkDuration);
+                        }
+                        
+                        // Only show ball during blink
+                        shouldBeVisible = this.isCurrentlyVisible;
+                    }
+                }
+                
+                // Draw the ball with proper visibility
+                ctx.globalAlpha = shouldBeVisible ? this.opacity : 0;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Show a "trail" to indicate direction when ball is blinking
+                if (this.invisibilityMode && !shouldBeVisible) {
+                    // Draw a faint trail in the direction of movement
+                    const trailLength = 3;
+                    for (let i = 1; i <= trailLength; i++) {
+                        const trailOpacity = 0.05 - (i * 0.01);
+                        ctx.globalAlpha = trailOpacity;
+                        ctx.beginPath();
+                        ctx.arc(
+                            this.x - (this.speedX * i * 2), 
+                            this.y - (this.speedY * i * 2), 
+                            this.size * (1 - i * 0.2), 
+                            0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                }
+                
+                ctx.globalAlpha = 1.0;
+                
+                // Draw code lines following the ball (crosshair effect)
+                // Only if crosshair intensity is more than 0 and ball is visible
+                if (CROSSHAIR_OPACITY > 0 && shouldBeVisible) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, 0);
+                    ctx.lineTo(this.x, gameCanvas.height);
+                    ctx.strokeStyle = `rgba(${hexToRgb(this.color)}, ${CROSSHAIR_OPACITY})`;
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, this.y);
+                    ctx.lineTo(gameCanvas.width, this.y);
+                    ctx.stroke();
+                }
+            };
+        }
+        
+        // PowerUpBall object constructor - a special ball that grants power-ups when hit by the game ball
+        function PowerUpBall() {
+            this.x = gameCanvas.width / 2;
+            this.y = gameCanvas.height / 2;
+            this.speedX = (Math.random() > 0.5 ? 1 : -1) * 2;
+            this.speedY = (Math.random() * 4 - 2);
+            this.size = BALL_SIZE * 1.5;
+            this.active = true;
+            
+            // Update position and check for collisions
+            this.update = function() {
+                if (!this.active) return false;
+                
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Bounce off all walls
+                if (this.y < this.size || this.y > gameCanvas.height - this.size) {
+                    this.speedY = -this.speedY;
+                    this.y = this.y < this.size ? this.size : gameCanvas.height - this.size;
+                }
+                
+                // Bounce off left and right walls too
+                if (this.x < this.size || this.x > gameCanvas.width - this.size) {
+                    this.speedX = -this.speedX;
+                    this.x = this.x < this.size ? this.size : gameCanvas.width - this.size;
+                }
+                
+                // Check collision with game ball
+                if (ball && this.active) {
+                    const dx = this.x - ball.x;
+                    const dy = this.y - ball.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < this.size + ball.size) {
+                        // Determine who gets the power-up based on who last hit the ball
+                        const powerUpRecipient = ball.lastHitBy;
+                        
+                        // Only apply if someone has hit the ball
+                        if (powerUpRecipient !== 'none') {
+                            // Ball got the power-up
+                            this.active = false;
+                            applyRandomPowerUp(powerUpRecipient);
+                            
+                            // Add visual effect
+                            addScreenShake(5, 200);
+                            
+                            // Create an explosion effect at collision point
+                            createPowerUpExplosion(this.x, this.y);
+                            
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            };
+            
+            // Draw the power-up ball
+            this.draw = function() {
+                if (!this.active) return;
+                
+                // Create pulsing glow effect
+                const pulseSize = Math.sin(Date.now() / 200) * 5 + 15;
+                
+                const hue = (Date.now() / 15) % 360;
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.size + pulseSize
+                );
+                gradient.addColorStop(0, 'white');
+                gradient.addColorStop(0.5, `hsl(${hue}, 100%, 70%)`);
+                gradient.addColorStop(1, 'transparent');
+                
+                // Draw outer glow
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size + pulseSize, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                // Draw power-up ball
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                ctx.shadowColor = `hsl(${hue}, 100%, 70%)`;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Draw "P" inside
+                ctx.font = 'bold 16px monospace';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('P', this.x, this.y);
+            };
+        }
+        
+        // Create visual explosion effect when power-up is collected
+        function createPowerUpExplosion(x, y) {
+            // Number of particles
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                // Create a div for the particle
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = '5px';
+                particle.style.height = '5px';
+                particle.style.borderRadius = '50%';
+                particle.style.backgroundColor = activePowerUp ? activePowerUp.color : '#fff';
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '15';
+                particle.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
+                particle.style.opacity = '1';
+                container.appendChild(particle);
+                
+                // Random angle and distance
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 50 + 20;
+                
+                // Set final position with delay to trigger transition
+                setTimeout(() => {
+                    particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+                    particle.style.opacity = '0';
+                    
+                    // Remove particle after animation
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 500);
+                }, 10);
+            }
+        }
+        
+        // Apply a random power-up to the specified player
+        function applyRandomPowerUp(player) {
+            // Choose a random power-up type
+            const powerUp = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+            
+            // Apply the power-up effect
+            powerUp.effect(player);
+            
+            // Store as active power-up
+            activePowerUp = {
+                name: powerUp.name,
+                player: player,
+                color: powerUp.color
+            };
+            
+            // Display power-up message
+            powerUpDisplay.textContent = `${player.toUpperCase()} GOT: ${powerUp.name}`;
+            powerUpDisplay.style.color = powerUp.color;
+            
+            // Show active power-up indicator
+            activePowerUpEl.textContent = powerUp.name;
+            activePowerUpEl.style.color = powerUp.color;
+            activePowerUpEl.style.borderColor = powerUp.color;
+            activePowerUpEl.style.display = 'block';
+        }
+        
+        // Reset after a point is scored
+        function resetBall() {
+            // Create new ball at center
+            ball = new Ball(
+                gameCanvas.width / 2,
+                gameCanvas.height / 2,
+                (Math.random() > 0.5 ? 1 : -1) * gameSettings.ballSpeed,
+                (Math.random() * 4 - 2),
+                BALL_SIZE,
+                currentTheme.primary
+            );
+            
+            // Initialize the ball's lastHitBy property
+            ball.lastHitBy = 'none';
+            
+            // Create new power-up ball with some delay
+            powerUpBall = null;
+            setTimeout(() => {
+                if (isPlaying && !isPaused) {
+                    powerUpBall = new PowerUpBall();
+                }
+            }, 2000);
+            
+            // Reset any active power-up
+            activePowerUp = null;
+            powerUpDisplay.textContent = '';
+            activePowerUpEl.style.display = 'none';
+            
+            // Reset paddle heights
+            playerPaddleHeight = PADDLE_HEIGHT;
+            aiPaddleHeight = PADDLE_HEIGHT;
+            
+            // Reset ball visibility
+            ballInvisibleToAI = false;
+            aiLastKnownBallPosition = null;
+            aiCanSeeImpact = false;
+        }
+        
+        // Add screen shake effect
+        function addScreenShake(intensity, duration) {
+            if (gameSettings.screenEffects === 'none') return;
+            
+            const actualIntensity = gameSettings.screenEffects === 'light' ? intensity / 2 : intensity;
+            
+            const shake = function() {
+                const xShake = (Math.random() * actualIntensity * 2) - actualIntensity;
+                const yShake = (Math.random() * actualIntensity * 2) - actualIntensity;
+                
+                gameCanvas.style.transform = `translate(${xShake}px, ${yShake}px)`;
+                matrixCanvas.style.transform = `translate(${xShake}px, ${yShake}px)`;
+            };
+            
+            const intervalId = setInterval(shake, 50);
+            
+            setTimeout(() => {
+                clearInterval(intervalId);
+                gameCanvas.style.transform = 'translate(0px, 0px)';
+                matrixCanvas.style.transform = 'translate(0px, 0px)';
+            }, duration);
+        }
+        
+        // Initialize matrix effect
+        function initMatrix() {
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.floor(Math.random() * -20);
+            }
+        }
+        
+        // Draw matrix rain effect
+        function drawMatrix() {
+            matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+            
+            matrixCtx.fillStyle = currentTheme.primary;
+            matrixCtx.font = '15px monospace';
+            
+            const columnWidth = matrixCanvas.width / columns;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                matrixCtx.fillText(text, i * columnWidth, drops[i] * 20);
+                
+                if (drops[i] * 20 > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        // AI prediction for ball position
+        function predictBallPosition() {
+            // If no ball or AI isn't active, return center
+            if (!aiMode || !ball) {
+                return gameCanvas.height / 2;
+            }
+            
+            // If ball is in invisibility mode and this affects AI
+            if (ball.invisibilityMode && ball.invisibleFor === 'ai') {
+                // If we're on the AI side and the ball isn't currently visible
+                const ballOnAISide = ball.x > gameCanvas.width / 2;
+                
+                if (ballOnAISide && !ball.isCurrentlyVisible) {
+                    // Use last known position with increasing uncertainty
+                    const centerPull = 0.3; // Tendency to drift toward center when uncertain
+                    const randomFactor = Math.random() * aiPaddleHeight - aiPaddleHeight / 2;
+                    return (aiY + aiPaddleHeight/2) * (1 - centerPull) + 
+                           (gameCanvas.height / 2) * centerPull + 
+                           randomFactor * aiRandomness * 2; // Double the normal randomness
+                }
+            }
+            
+            // If ball is moving away from AI, move toward center with added randomness
+            if (ball.speedX <= 0) {
+                return (gameCanvas.height / 2) + (Math.random() * aiPaddleHeight - aiPaddleHeight / 2) * aiRandomness;
+            }
+            
+            // Basic prediction - only predict to edge of screen
+            let predictX = ball.x;
+            let predictY = ball.y;
+            let predictSpeedX = ball.speedX;
+            let predictSpeedY = ball.speedY;
+            
+            // Reduced prediction accuracy
+            while (predictX < gameCanvas.width - PADDLE_WIDTH - ball.size) {
+                predictX += predictSpeedX;
+                predictY += predictSpeedY;
+                
+                // Check for bounce off top/bottom walls with added randomness
+                if (predictY < ball.size || predictY > gameCanvas.height - ball.size) {
+                    predictSpeedY = -predictSpeedY * (1 + (Math.random() * aiRandomness - aiRandomness/2));
+                    predictY = predictY < ball.size ? ball.size : gameCanvas.height - ball.size;
+                }
+            }
+            
+            // Add randomness based on difficulty
+            const randomFactor = Math.random() * aiRandomness * aiPaddleHeight - (aiRandomness * aiPaddleHeight / 2);
+            
+            // Return target position
+            return Math.max(0, Math.min(gameCanvas.height - aiPaddleHeight, predictY - aiPaddleHeight / 2 + randomFactor));
+        }
+        
+        // Update AI position with delay and smoothing
+        function moveAI() {
+            // Only update target position occasionally to simulate delay
+            if (aiFrameCounter % aiReactionDelay === 0) {
+                aiTargetY = predictBallPosition();
+            }
+            aiFrameCounter++;
+            
+            // Move AI paddle towards target position with smoothing
+            if (aiY + aiPaddleHeight / 2 < aiTargetY + aiPaddleHeight / 2 - AI_SPEED / 2) {
+                aiY += AI_SPEED;
+            } else if (aiY + aiPaddleHeight / 2 > aiTargetY + aiPaddleHeight / 2 + AI_SPEED / 2) {
+                aiY -= AI_SPEED;
+            }
+            
+            // Keep AI paddle in bounds
+            aiY = Math.max(0, Math.min(gameCanvas.height - aiPaddleHeight, aiY));
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreDisplay.textContent = `${playerScore} : ${aiScore}`;
+            
+            // Check for game over
+            if (playerScore >= WINNING_SCORE || aiScore >= WINNING_SCORE) {
+                isPlaying = false;
+                winnerText.textContent = playerScore >= WINNING_SCORE ? 
+                    "YOU ARE THE ONE" : 
+                    "THE MACHINES HAVE WON";
+                gameOverScreen.style.display = "flex";
+                
+                // Add big screen shake on game over
+                if (gameSettings.screenEffects !== 'none') {
+                    addScreenShake(10, 500);
+                }
+            }
+        }
+        
+        // Convert hex color to rgb format for transparency
+        function hexToRgb(hex) {
+            // Remove # if present
+            hex = hex.replace('#', '');
+            
+            // Parse hex - handle both 3 and 6 digit formats
+            let r, g, b;
+            if (hex.length === 3) {
+                r = parseInt(hex[0] + hex[0], 16);
+                g = parseInt(hex[1] + hex[1], 16);
+                b = parseInt(hex[2] + hex[2], 16);
+            } else {
+                r = parseInt(hex.substring(0, 2), 16);
+                g = parseInt(hex.substring(2, 4), 16);
+                b = parseInt(hex.substring(4, 6), 16);
+            }
+            
+            return `${r}, ${g}, ${b}`;
+        }
+        
+        // Initialize game state
+        function initGame() {
+            // Apply current settings
+            applySettings();
+            
+            // Reset game variables
+            playerY = gameCanvas.height / 2 - PADDLE_HEIGHT / 2;
+            aiY = gameCanvas.height / 2 - PADDLE_HEIGHT / 2;
+            playerScore = 0;
+            aiScore = 0;
+            isPlaying = true;
+            isPaused = false;
+            
+            // Reset paddles
+            playerPaddleHeight = PADDLE_HEIGHT;
+            aiPaddleHeight = PADDLE_HEIGHT;
+            
+            // Reset power-ups
+            activePowerUp = null;
+            powerUpDisplay.textContent = '';
+            activePowerUpEl.style.display = 'none';
+            
+            // Update score display
+            updateScore();
+            
+            // Reset ball position
+            resetBall();
+            
+            // Update game mode text
+            controlsInfo.textContent = aiMode ? 
+                'PLAYER: W/S KEYS' : 
+                'PLAYER 1: W/S KEYS | PLAYER 2: ARROW KEYS';
+            
+            // Hide game over screen if visible
+            gameOverScreen.style.display = 'none';
+            
+            // Hide main menu
+            mainMenu.style.display = 'none';
+            
+            // Show pause button
+            pauseBtn.style.display = 'block';
+            
+            // Start the game
+            gameStarted = true;
+        }
+        
+        // Pause the game
+        function pauseGame() {
+            if (!gameStarted || !isPlaying) return;
+            
+            isPaused = true;
+            pauseScreen.style.display = 'flex';
+        }
+        
+        // Resume the game
+        function resumeGame() {
+            if (!gameStarted || !isPlaying) return;
+            
+            isPaused = false;
+            pauseScreen.style.display = 'none';
+        }
+        
+        // Return to main menu
+        function returnToMainMenu() {
+            isPlaying = false;
+            isPaused = false;
+            gameStarted = false;
+            
+            // Hide game screens
+            gameOverScreen.style.display = 'none';
+            pauseScreen.style.display = 'none';
+            pauseBtn.style.display = 'none';
+            
+            // Show main menu
+            mainMenu.style.display = 'flex';
+        }
+        
+        // Update game state
+        function update() {
+            if (!isPlaying || isPaused) return;
+            
+            // Move player paddle based on key input
+            if (keys.w) {
+                playerY = Math.max(0, playerY - PLAYER_SPEED);
+            }
+            if (keys.s) {
+                playerY = Math.min(gameCanvas.height - playerPaddleHeight, playerY + PLAYER_SPEED);
+            }
+            
+            // Move AI or second player paddle
+            if (aiMode) {
+                moveAI();
+            } else {
+                // Second player controls
+                if (keys.up) {
+                    aiY = Math.max(0, aiY - PLAYER_SPEED);
+                }
+                if (keys.down) {
+                    aiY = Math.min(gameCanvas.height - aiPaddleHeight, aiY + PLAYER_SPEED);
+                }
+            }
+            
+            // Update ball and check for scoring
+            let scored = false;
+            if (ball) {
+                scored = ball.update();
+            }
+            
+            // Update power-up ball if it exists
+            if (powerUpBall) {
+                powerUpBall.update();
+            }
+            
+            // If ball scored, reset
+            if (scored) {
+                resetBall();
+            }
+        }
+        
+        // Draw the game
+        function draw() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+            
+            // Apply current theme colors
+            let primaryColor = currentTheme.primary;
+            
+            // Draw center line (dashed)
+            ctx.beginPath();
+            ctx.setLineDash([5, 10]);
+            ctx.moveTo(gameCanvas.width / 2, 0);
+            ctx.lineTo(gameCanvas.width / 2, gameCanvas.height);
+            ctx.strokeStyle = primaryColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw paddles
+            // Player paddle
+            ctx.fillStyle = primaryColor;
+            ctx.fillRect(0, playerY, PADDLE_WIDTH, playerPaddleHeight);
+            
+            // AI/Player 2 paddle
+            ctx.fillRect(gameCanvas.width - PADDLE_WIDTH, aiY, PADDLE_WIDTH, aiPaddleHeight);
+            
+            // Add Matrix-style glowing effect to paddles
+            ctx.shadowColor = primaryColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            ctx.fillRect(0, playerY, PADDLE_WIDTH, playerPaddleHeight);
+            ctx.fillRect(gameCanvas.width - PADDLE_WIDTH, aiY, PADDLE_WIDTH, aiPaddleHeight);
+            
+            ctx.shadowBlur = 0;
+            
+            // Draw ball
+            if (ball) {
+                ball.draw();
+            }
+            
+            // Draw power-up ball if it exists
+            if (powerUpBall) {
+                powerUpBall.draw();
+            }
+        }
+        
+        // Main game loop
+        function gameLoop() {
+            if (gameStarted) {
+                update();
+                draw();
+            }
+            
+            // Always draw matrix effect (even in menus)
+            drawMatrix();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Event listeners for buttons
+        playBtn.addEventListener('click', function() {
+            mainMenu.style.display = 'none';
+            modeSelection.style.display = 'flex';
+        });
+        
+        settingsBtn.addEventListener('click', function() {
+            mainMenu.style.display = 'none';
+            settingsMenu.style.display = 'flex';
+        });
+        
+        saveSettingsBtn.addEventListener('click', function() {
+            applySettings();
+            settingsMenu.style.display = 'none';
+            mainMenu.style.display = 'flex';
+        });
+        
+        cancelSettingsBtn.addEventListener('click', function() {
+            // Reset UI to match current settings without applying changes
+            initUI();
+            settingsMenu.style.display = 'none';
+            mainMenu.style.display = 'flex';
+        });
+        
+        aiModeBtn.addEventListener('click', function() {
+            aiMode = true;
+            modeSelection.style.display = 'none';
+            initGame();
+        });
+        
+        twoPlayerModeBtn.addEventListener('click', function() {
+            aiMode = false;
+            modeSelection.style.display = 'none';
+            initGame();
+        });
+        
+        backToMenuBtn.addEventListener('click', function() {
+            modeSelection.style.display = 'none';
+            mainMenu.style.display = 'flex';
+        });
+        
+        pauseBtn.addEventListener('click', function() {
+            pauseGame();
+        });
+        
+        resumeBtn.addEventListener('click', function() {
+            resumeGame();
+        });
+        
+        exitToMenuBtn.addEventListener('click', function() {
+            returnToMainMenu();
+        });
+        
+        restartBtn.addEventListener('click', function() {
+            initGame();
+        });
+        
+        mainMenuBtn.addEventListener('click', function() {
+            returnToMainMenu();
+        });
+        
+        // Keyboard input handling
+        window.addEventListener('keydown', function(e) {
+            if (e.key.toLowerCase() === 'w') keys.w = true;
+            if (e.key.toLowerCase() === 's') keys.s = true;
+            if (e.key === 'ArrowUp') keys.up = true;
+            if (e.key === 'ArrowDown') keys.down = true;
+            if (e.key === 'Escape') {
+                // Toggle pause state
+                if (gameStarted && isPlaying) {
+                    if (isPaused) {
+                        resumeGame();
+                    } else {
+                        pauseGame();
+                    }
+                }
+            }
+            
+            // Prevent default behavior for game keys to avoid page scrolling
+            if (['w', 's', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+        
+        window.addEventListener('keyup', function(e) {
+            if (e.key.toLowerCase() === 'w') keys.w = false;
+            if (e.key.toLowerCase() === 's') keys.s = false;
+            if (e.key === 'ArrowUp') keys.up = false;
+            if (e.key === 'ArrowDown') keys.down = false;
+        });
+        
+        // Initialize UI and start the game loop
+        initUI();
+        initMatrix();
+        gameLoop();
+    </script>
+</body>
+</html>

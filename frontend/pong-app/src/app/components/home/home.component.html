@@ -1,0 +1,19 @@
+<div class="app">
+  <!-- Header -->
+  <app-header></app-header>
+
+  <!-- Home Section -->
+  <main class="home">
+    <div class="container">
+      <h2 class="section-title">{{ currentTexts.select_game_mode }}</h2>
+      <div class="button-container">
+        <button class="button-mode" (click)="matchmenu()">
+          {{ currentTexts.play }}
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>
