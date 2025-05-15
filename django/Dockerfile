@@ -2,14 +2,14 @@ FROM python:3.9
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV SSL_CERT_FILE=/code/certs/cert.pem
-ENV SSL_KEY_FILE=/code/certs/key.pem
 
 # Instalar cliente PostgreSQL y herramientas SSL
 RUN apt-get update && apt-get install -y postgresql-client openssl
 
 # Crear estructura de directorios
 RUN mkdir -p /code/django /code/certs
+
+COPY ./certs /code/certs
 
 WORKDIR /code/django
 

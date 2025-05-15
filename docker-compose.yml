@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-elephant}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     networks:
@@ -17,10 +17,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    # Los volúmenes se han eliminado para evitar la sincronización en tiempo real
-    # En lugar de usar volúmenes montados, copiaremos los archivos necesarios en run.sh
-    volumes:
-      - ./frontend/certs:/frontend/certs
     networks:
       - miknet
     depends_on:

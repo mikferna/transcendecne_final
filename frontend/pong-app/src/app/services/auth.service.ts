@@ -55,10 +55,6 @@ export class AuthService {
   }
 
   handle42Callback(access: string, refresh: string): void {
-    console.log('Processing 42 callback with tokens');
-    console.log('Access token received:', access ? 'yes' : 'no');
-    console.log('Refresh token received:', refresh ? 'yes' : 'no');
-
     if (access && refresh) {
       this.tokenService.setTokens(access, refresh);
       localStorage.setItem('is_42_user', 'true');  // Marcar como usuario de 42
@@ -90,7 +86,6 @@ export class AuthService {
           this.currentUserSubject.next(user);
         },
         error: (error) => {
-          console.error('Error updating auth state:', error);
           this.logout();
         }
       });
@@ -133,7 +128,6 @@ export class AuthService {
   updateCurrentUser(): Observable<any> {
     return this.getCurrentUser().pipe(
       tap(user => {
-        console.log('Usuario actualizado:', user);
       })
     );
   }
