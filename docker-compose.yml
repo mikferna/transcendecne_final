@@ -54,4 +54,4 @@ networks:
     driver: bridge
 
 volumes:
-  django_data:  # Volumen nombrado para persistencia de datos de media
+  django_data:

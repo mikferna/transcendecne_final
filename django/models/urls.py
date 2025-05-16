@@ -1,5 +1,7 @@
 from django.urls import path, include
 from . import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     # Rutas básicas
@@ -46,3 +48,5 @@ urlpatterns = [
     path('matches/create/', views.createMatch.as_view(), name='create_match'),
     path('test-connection/', views.test_connection, name='test_connection'),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
